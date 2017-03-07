@@ -158,7 +158,7 @@
 (defmethod end-timestamp ((obj task))
   (cond ((and (start-timestamp obj)
               (duration obj))
-         (time-interval::timestamp-add-interval
+         (time-interval:t+
           (start-timestamp obj) (duration obj)))
         ((start-timestamp obj)
          (start-timestamp obj))))
