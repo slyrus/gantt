@@ -23,7 +23,8 @@
            #:day-timestamp
            #:duration
 
-           #:print-task-tree))
+           #:print-task-tree
+           #:read-task))
 
 (cl:in-package :gantt)
 
@@ -219,4 +220,28 @@
 (defun day-timestamp (day month year)
   (encode-timestamp 0 0 0 0 day month year))
 
+
+(defun remove-keyword-arg (args remove-key)
+  (loop for (key value) on args by #'cddr
+     unless (eq remove-key key)
+       append (list key value)))
+
+(defun read-task (task-spec &optional task-tree)
+  (let ((atom-or-list (car task-spec)))
+    (let ((task (if (atom atom-or-list)
+                    (deftask atom-or-list)
+                    (destructuring-bind (name &rest args &key depends-on &allow-other-keys)
+                        atom-or-list
+                      (let ((task (apply #'deftask name (remove-keyword-arg args :depends-on))))
+                        (when depends-on
+                          (let ((dep-task
+                                 (loop for parent-task in task-tree
+                                    thereis (find-task depends-on parent-task))))
+                            (when dep-task
+                              (add-dependency dep-task task))))
+                        task)))))
+      (map nil (lambda (x)
+                 (add-task task (read-task x (cons task task-tree))))
+           (cdr task-spec))
+      task)))
 
