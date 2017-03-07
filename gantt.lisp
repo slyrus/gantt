@@ -114,6 +114,15 @@
     (unless stream
       (get-output-stream-string out))))
 
+(defun flatten-task-tree (tree)
+  (let (list)
+    (labels ((traverse (subtree)
+               (when subtree
+                 (when (children subtree)
+                   (map nil #'traverse (children subtree)))
+                 (push subtree list))))
+      (traverse tree))
+    (nreverse list)))
 
 (defun defproject (name)
   (make-instance 'task :name name))
