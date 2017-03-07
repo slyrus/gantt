@@ -17,10 +17,13 @@
            #:dependency
            #:add-dependency
 
+           #:dependencies
            #:start
            #:end
            #:day-timestamp
-           #:duration))
+           #:duration
+
+           #:print-task-tree))
 
 (cl:in-package :gantt)
 
