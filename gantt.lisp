@@ -20,7 +20,6 @@
            #:dependencies
            #:start
            #:end
-           #:day-timestamp
            #:duration
 
            #:print-task-tree
@@ -216,10 +215,6 @@
                       (t (+ a b))))
               (mapcar #'cost
                       (children task)))))
-
-(defun day-timestamp (day month year)
-  (encode-timestamp 0 0 0 0 day month year))
-
 
 (defun remove-keyword-arg (args remove-key)
   (loop for (key value) on args by #'cddr
