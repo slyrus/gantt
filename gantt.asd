@@ -1,5 +1,6 @@
 
 (asdf:defsystem :gantt
-  :depends-on (local-time time-interval)
+  :depends-on (local-time time-interval named-readtables)
   :components
-  ((:file "gantt")))
+  ((:file "gantt")
+   (:file "date-reader")))
