@@ -14,6 +14,9 @@
            #:defproject
            #:defgroup
 
+           #:resource
+           #:defresource
+
            #:dependency
            #:add-dependency
 
@@ -97,6 +100,20 @@
                                       :dependency-type-a dep-a-type
                                       :task-b dep-b-obj
                                       :dependency-type-b dep-b-type)))))
+
+;;;
+;;; resource class
+(defclass resource ()
+  ((name :initarg :name :accessor name)))
+
+(defmethod print-object ((obj resource) out)
+  (print-unreadable-object (obj out :type t :identity t)
+    (with-accessors ((name name ))
+        obj
+      (write name :stream out))))
+
+(defun defresource (name)
+  (make-instance 'resource :name name))
 
 (defun print-task-tree (task &key stream (indent 0))
   (let ((out (or stream
