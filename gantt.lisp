@@ -32,7 +32,8 @@
    (start-timestamp :initarg :start-timestamp :accessor start-timestamp :initform nil)
    (duration :initarg :duration :accessor duration :initform nil)
    (dependencies :initarg :dependencies :accessor dependencies :initform nil)
-   (cost :initarg :cost :accessor task-cost :initform nil)))
+   (cost :initarg :cost :accessor task-cost :initform nil)
+   (progress :initarg :progress :accessor task-progress :initform nil)))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
@@ -117,14 +118,18 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (name &key start-timestamp duration cost)
+(defun deftask (name &key start-timestamp duration progress cost)
   (apply #'make-instance 'task :name name
          (append (when start-timestamp
                    `(:start-timestamp ,start-timestamp))
                  (when duration
-                   `(:duration ,duration))
+                   `(:duration ,(if (stringp duration)
+                                    (time-interval:parse-time-interval-string duration)
+                                    duration)))
                  (when cost
-                   `(:cost ,cost)))))
+                   `(:cost ,cost))
+                 (when progress
+                   `(:progress ,progress)))))
 
 (defun find-task (name task &key (test #'equal))
   (labels ((%find-task (task)
