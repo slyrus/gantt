@@ -151,6 +151,10 @@
         ((start-timestamp obj)
          (start-timestamp obj))))
 
+(defun task-finished-p (task)
+  (let ((progress (task-progress task)))
+    (and progress (>= progress 1.0))))
+
 ;; functions
 (defun add-child (parent child)
   (vector-push-extend child (children parent)))
