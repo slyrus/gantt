@@ -43,7 +43,7 @@
 (defclass task ()
   ((name :initarg :name :accessor name)
    (children :initarg :children :accessor children :initform (make-array 0 :fill-pointer t))
-   (start :initarg :task-start :accessor task-start :initform nil)
+   (start :initarg :start :accessor task-start :initform nil)
    (duration :initarg :duration :accessor duration :initform nil)
    (dependencies :initarg :dependencies :accessor dependencies :initform nil)
    (cost :initarg :cost :accessor task-cost :initform nil)
