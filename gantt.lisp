@@ -7,13 +7,21 @@
                 #:timestamp+)
   (:import-from :time-interval
                 #:time-interval)
+  (:import-from :cl-who
+                #:with-html-output
+                #:fmt
+                #:htm
+                #:str)
   (:export #:task
            #:add-task
            #:find-task
            #:deftask
            #:defproject
            #:defgroup
-
+           #:task-start
+           #:task-end
+           #:task-cost
+           #:task-progress
            #:resource
            #:defresource
 
@@ -35,7 +43,7 @@
 (defclass task ()
   ((name :initarg :name :accessor name)
    (children :initarg :children :accessor children :initform (make-array 0 :fill-pointer t))
-   (start-timestamp :initarg :start-timestamp :accessor start-timestamp :initform nil)
+   (start :initarg :task-start :accessor task-start :initform nil)
    (duration :initarg :duration :accessor duration :initform nil)
    (dependencies :initarg :dependencies :accessor dependencies :initform nil)
    (cost :initarg :cost :accessor task-cost :initform nil)
@@ -141,16 +149,88 @@
       (traverse tree))
     (nreverse list)))
 
+(defmacro with-html-output* (args &body (body))
+  `(cl-who:with-html-output ,args ,@(eval body)))
+
+(defun timestamp-ymd (timestamp)
+  (local-time:format-timestring nil timestamp
+                                :format '((:year 4) #\- (:month 2) #\- (:day 2))))
+
+(defparameter *row-colors* '("#fff" "#eee" "#ddd" "#ccc" "#bbb" "#aaa"))
+
+(defun write-task-tree-html (path task &key (indent 0))
+  (with-open-file (s path :direction :output :if-does-not-exist :create :if-exists :supersede)
+    (with-html-output (s nil :indent t)
+      (labels ((%print-task-tree-html (task indent)
+                 (htm
+                  (:tr :class "collapse"
+                       :data-depth indent
+                       :style
+                       (let* ((index (mod indent (length *row-colors*)))
+                              (color (elt *row-colors* index)))
+                         (format nil "background-color: ~A;" color))
+                       (:td
+                        (when (plusp (length (children task)))
+                          (htm (:span :class "toggle"))))
+                       (:td :style
+                            (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                            (str (name task)))
+                       (:td (str
+                             (let ((start (task-start task)))
+                               (when start (timestamp-ymd start)))))
+                       (:td (str
+                             (let ((end (task-end task)))
+                               (when end (timestamp-ymd end)))))
+                       (:td :style
+                            (format nil "text-align: right;")
+                            (str (format nil "~@[$~,'*:D~]" (task-cost task))))
+                       (:td (str (if (task-finished-p task)
+                                     "Finished"
+                                     (task-progress task)))))
+                  (when (children task)
+                    (htm
+                     (map nil
+                          (lambda (x)
+                            (htm
+                             (str (%print-task-tree-html x (+ indent 1)))))
+                          (children task)))))))
+        (htm
+         (:html :lang "en"
+                (:head
+                 (:meta :charset "utf-8")
+                 (:meta :http-equiv "X-UA-Compatible" :content "ID=edge")
+                 (:meta :name "viewport" :content "width=device-width, initial-scale=1")
+                 (:link :rel "stylesheet" :type "text/css" :href "gantt.css")
+                 (:script :src "jquery-3.1.1.js" :type "text/javascript")
+                 (:script :src "gantt.js" :type "text/javascript")
+                 (:style :type "text/css" "
+* { font-family: Arial, Helvetica, sans-serif }
+")
+                 (:title "Title!"))
+                (:body
+                 (progn
+                   (htm
+                    (:table :id "mytable" :border 0 :cellpadding 4
+                            (:tr
+                             (:th)
+                             (:th "Task Name")
+                             (:th "Start")
+                             (:th "End")
+                             (:th "Cost")
+                             (:th "Progress"))
+                            (%print-task-tree-html task indent)))))))))
+    path))
+
 (defun defproject (name)
   (make-instance 'task :name name))
 
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (name &key start-timestamp duration progress cost)
+(defun deftask (name &key task-start duration progress cost)
   (apply #'make-instance 'task :name name
-         (append (when start-timestamp
-                   `(:start-timestamp ,start-timestamp))
+         (append (when task-start
+                   `(:task-start ,task-start))
                  (when duration
                    `(:duration ,(if (stringp duration)
                                     (time-interval:parse-time-interval-string duration)
@@ -170,15 +250,15 @@
                   (find name children :key #'%find-task :test test))))))
     (%find-task task)))
 
-(defgeneric end-timestamp (task))
+(defgeneric task-end (task))
 
-(defmethod end-timestamp ((obj task))
-  (cond ((and (start-timestamp obj)
+(defmethod task-end ((obj task))
+  (cond ((and (task-start obj)
               (duration obj))
          (time-interval:t+
-          (start-timestamp obj) (duration obj)))
-        ((start-timestamp obj)
-         (start-timestamp obj))))
+          (task-start obj) (duration obj)))
+        ((task-start obj)
+         (task-start obj))))
 
 (defun task-finished-p (task)
   (let ((progress (task-progress task)))
@@ -192,7 +272,7 @@
   "Adds a task to the parent and returns the added (child) task."
   (add-child parent child)
   (when start
-    (setf (start-timestamp child)
+    (setf (task-start child)
           start))
   (when duration
     (setf (duration child)
@@ -207,7 +287,7 @@
   child)
 
 (defun start (task)
-  (or (start-timestamp task)
+  (or (task-start task)
       (reduce (lambda (&optional a b)
                 (cond ((null a) b)
                       ((null b) a)
@@ -216,7 +296,7 @@
                 (map (type-of children) #'start children)))))
 
 (defun end (task)
-  (or (end-timestamp task)
+  (or (task-end task)
       (reduce (lambda (&optional a b)
                 (cond ((null a) b)
                       ((null b) a)
@@ -230,8 +310,8 @@
                 (cond ((null a) b)
                       ((null b) a)
                       (t (+ a b))))
-              (mapcar #'cost
-                      (children task)))))
+              (let ((children (children task)))
+                (map (type-of children) #'cost children)))))
 
 (defun remove-keyword-arg (args remove-key)
   (loop for (key value) on args by #'cddr
