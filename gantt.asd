@@ -1,8 +1,8 @@
 
-;; (ql:quickload '(local-time time-interval named-readtables cl-who))
+;; (ql:quickload '(local-time time-interval named-readtables cl-who copy-directory))
 
 (asdf:defsystem :gantt
-  :depends-on (local-time time-interval named-readtables cl-who)
+  :depends-on (local-time time-interval named-readtables cl-who copy-directory)
   :serial t
   :components
   ((:file "gantt")
