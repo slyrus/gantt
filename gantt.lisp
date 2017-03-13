@@ -164,10 +164,10 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (name &key task-start duration progress cost)
+(defun deftask (name &key start duration progress cost parent)
   (apply #'make-instance 'task :name name
-         (append (when task-start
-                   `(:task-start ,task-start))
+         (append (when start
+                   `(:start ,start))
                  (when duration
                    `(:duration ,(if (stringp duration)
                                     (time-interval:parse-time-interval-string duration)
@@ -175,8 +175,11 @@
                  (when cost
                    `(:cost ,cost))
                  (when progress
-                   `(:progress ,progress)))))
+                   `(:progress ,progress))
+                 (when parent
+                   `(:parent ,parent)))))
 
+;;; find-task looks DOWN in task tree
 (defun find-task (name task &key (test #'equal))
   (labels ((%find-task (task)
              (when task
@@ -264,24 +267,38 @@
               (let ((children (children task)))
                 (map (type-of children) #'cost children)))))
 
-(defun remove-keyword-arg (args remove-key)
+(defun remove-keyword-arg (args remove-keys)
   (loop for (key value) on args by #'cddr
-     unless (eq remove-key key)
+     unless (member key remove-keys)
        append (list key value)))
 
 (defun read-task (task-spec &optional task-tree)
   (let ((atom-or-list (car task-spec)))
     (let ((task (if (atom atom-or-list)
                     (deftask atom-or-list)
-                    (destructuring-bind (name &rest args &key depends-on &allow-other-keys)
+                    (destructuring-bind (name &rest args &key depends-on resources &allow-other-keys)
                         atom-or-list
-                      (let ((task (apply #'deftask name (remove-keyword-arg args :depends-on))))
+                      (let ((task (apply #'deftask name
+                                         :parent (car task-tree)
+                                         (remove-keyword-arg args '(:resources :depends-on)))))
                         (when depends-on
-                          (let ((dep-task
-                                 (loop for parent-task in task-tree
-                                    thereis (find-task depends-on parent-task))))
-                            (when dep-task
-                              (add-dependency dep-task task))))
+                          (loop for dependency in depends-on
+                             do
+                               (let ((dep-task
+                                      (loop for parent-task in task-tree
+                                         thereis (find-task dependency parent-task))))
+                                 (when dep-task
+                                   (add-dependency dep-task task)))))
+                        (when resources
+                          (loop for resource in resources
+                             do
+                               (let ((rsrc
+                                      (loop for parent-task in task-tree
+                                         thereis (find-resource resource parent-task))))
+                                 (if rsrc
+                                     (add-resource rsrc task)
+                                     (let ((rsrc (defresource resource)))
+                                       (add-resource rsrc task))))))
                         task)))))
       (map nil (lambda (x)
                  (add-task task (read-task x (cons task task-tree))))
