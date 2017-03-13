@@ -22,8 +22,11 @@
            #:task-end
            #:task-cost
            #:task-progress
+           #:task-resources
+
            #:resource
            #:defresource
+           #:add-resource
 
            #:dependency
            #:add-dependency
@@ -43,11 +46,13 @@
 (defclass task ()
   ((name :initarg :name :accessor name)
    (children :initarg :children :accessor children :initform (make-array 0 :fill-pointer t))
+   (parent :initarg :parent :accessor parent :initform nil)
    (start :initarg :start :accessor task-start :initform nil)
    (duration :initarg :duration :accessor duration :initform nil)
    (dependencies :initarg :dependencies :accessor dependencies :initform nil)
    (cost :initarg :cost :accessor task-cost :initform nil)
-   (progress :initarg :progress :accessor task-progress :initform nil)))
+   (progress :initarg :progress :accessor task-progress :initform nil)
+   (resources :initarg :resources :accessor task-resources :initform nil)))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
@@ -181,6 +186,20 @@
                 (let ((children (children task)))
                   (find name children :key #'%find-task :test test))))))
     (%find-task task)))
+
+(defun add-resource (resource task)
+  (pushnew resource (task-resources task)))
+
+;;; Resource looks UP in task tree
+(defun find-resource (name resource &key (test #'equal))
+  (labels ((%find-resource (resource)
+             (when resource
+               (if
+                (and (atom resource) (funcall test (name resource) name))
+                (return-from find-resource resource)
+                (let ((children (children resource)))
+                  (find name children :key #'%find-resource :test test))))))
+    (%find-resource resource)))
 
 (defgeneric task-end (task))
 
