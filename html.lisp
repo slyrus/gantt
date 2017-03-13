@@ -6,7 +6,11 @@
 
 (defparameter *row-colors* '("#fff" "#eee" "#ddd" "#ccc" "#bbb" "#aaa"))
 
-(defun write-task-tree-html (path task &key (indent 0))
+(defun write-task-tree-html (path task &key (indent 0)
+                                            (show-start t)
+                                            (show-end t)
+                                            (show-resources t)
+                                            (row-colors *row-colors*))
   (with-open-file (s path :direction :output :if-does-not-exist :create :if-exists :supersede)
     (with-html-output (s nil :indent t)
       (labels ((%print-task-tree-html (task indent)
@@ -14,27 +18,52 @@
                   (:tr :class "collapse"
                        :data-depth indent
                        :style
-                       (let* ((index (mod indent (length *row-colors*)))
-                              (color (elt *row-colors* index)))
+                       (let* ((index (mod indent (length row-colors)))
+                              (color (elt row-colors index)))
                          (format nil "background-color: ~A;" color))
                        (:td
                         (when (plusp (length (children task)))
                           (htm (:span :class "toggle"))))
                        (:td :style
-                            (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                            (if (plusp (length (children task)))
+                                (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                                (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
                             (str (name task)))
-                       (:td (str
-                             (let ((start (task-start task)))
-                               (when start (timestamp-ymd start)))))
-                       (:td (str
-                             (let ((end (task-end task)))
-                               (when end (timestamp-ymd end)))))
-                       (:td :style
-                            (format nil "text-align: right;")
-                            (str (format nil "~@[$~,'*:D~]" (task-cost task))))
+                       (when show-start
+                         (htm
+                          (:td (str
+                                (let ((start (task-start task)))
+                                  (when start (timestamp-ymd start)))))))
+                       (when show-end
+                         (htm
+                          (:td (str
+                                (let ((end (task-end task)))
+                                  (when end (timestamp-ymd end)))))))
+                       (let ((task-cost (task-cost task)))
+                         (if task-cost
+                             (htm
+                              (:td :style
+                                   (format nil "text-align: right; text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                                   (str (format nil "~@[$~,'*:D~]" task-cost))))
+                             (htm
+                              (:td :style
+                                   (if (plusp (length (children task)))
+                                       (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                                       (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
+                                   (str (format nil "~@[$~,'*:D~]" (cost task)))))))
                        (:td (str (if (task-finished-p task)
                                      "Finished"
-                                     (task-progress task)))))
+                                     (task-progress task))))
+                       (when show-resources
+                         (htm
+                          (:td
+                           (let ((resources (task-resources task)))
+                             (when resources
+                               (htm (:ul
+                                     (loop for resource in resources
+                                        do
+                                          (htm
+                                           (:li (str (name resource)))))))))))))
                   (when (children task)
                     (htm
                      (map nil
@@ -54,18 +83,25 @@
                  (:style :type "text/css" "
 * { font-family: Arial, Helvetica, sans-serif }
 ")
-                 (:title "Title!"))
+                 (:title (str (name task))))
                 (:body
                  (progn
                    (htm
-                    (:table :id "mytable" :border 0 :cellpadding 4
+                    (:table :id "mytable"
                             (:tr
                              (:th)
                              (:th "Task Name")
-                             (:th "Start")
-                             (:th "End")
+                             (when show-start
+                               (htm
+                                (:th "Start")))
+                             (when show-end
+                               (htm
+                                (:th "End")))
                              (:th "Cost")
-                             (:th "Progress"))
+                             (:th "Progress")
+                             (when show-resources
+                               (htm
+                                (:th "Resources"))))
                             (%print-task-tree-html task indent)))))))))
     path))
 
