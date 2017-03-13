@@ -11,6 +11,21 @@
                                             (show-end t)
                                             (show-resources t)
                                             (row-colors *row-colors*))
+  ;;; copy resources to path
+  (let ((src-js (merge-pathnames "js/"
+                                 (asdf:component-pathname
+                                  (asdf:find-system :gantt))))
+        (dest-js (merge-pathnames "js/"
+                                      (make-pathname
+                                       :directory (pathname-directory (truename path))))))
+    (copy-directory:copy src-js dest-js))
+  (let ((src-css (merge-pathnames "css/"
+                                 (asdf:component-pathname
+                                  (asdf:find-system :gantt))))
+        (dest-css (merge-pathnames "css/"
+                                      (make-pathname
+                                       :directory (pathname-directory (truename path))))))
+    (copy-directory:copy src-css dest-css))
   (with-open-file (s path :direction :output :if-does-not-exist :create :if-exists :supersede)
     (with-html-output (s nil :indent t)
       (labels ((%print-task-tree-html (task indent)
