@@ -259,13 +259,14 @@
                 (map (type-of children) #'end children)))))
 
 (defun cost (task)
-  (or (task-cost task)
-      (reduce (lambda (&optional a b)
-                (cond ((null a) b)
-                      ((null b) a)
-                      (t (+ a b))))
-              (let ((children (children task)))
-                (map (type-of children) #'cost children)))))
+  (unless (task-finished-p task)
+    (or (task-cost task)
+        (reduce (lambda (&optional a b)
+                  (cond ((null a) b)
+                        ((null b) a)
+                        (t (+ a b))))
+                (let ((children (children task)))
+                  (map (type-of children) #'cost children))))))
 
 (defun remove-keyword-arg (args remove-keys)
   (loop for (key value) on args by #'cddr
