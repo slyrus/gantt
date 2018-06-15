@@ -13,6 +13,7 @@
                                             (show-start t)
                                             (show-end t)
                                             (show-resources t)
+                                            (show-dependencies nil)
                                             (row-colors *row-colors*))
   ;;; copy resources to path
   (let ((dest-directory (pathname-directory (merge-pathnames *default-pathname-defaults* path))))
@@ -78,7 +79,21 @@
                                        (loop for resource in resources
                                           do
                                             (htm
-                                             (:li (str (name resource)))))))))))))
+                                             (:li (str (name resource))))))))))))
+                         (when show-dependencies
+                           (htm
+                            (:td
+                             (let ((dependencies (task-dependencies task)))
+                               (when dependencies
+                                 (htm (:ul
+                                       (loop for dependency in dependencies
+                                          do
+                                            (let ((task-a (task-a dependency))
+                                                  (task-b (task-b dependency)))
+                                              (htm
+                                               (:li (str (format nil "~A -> ~A"
+                                                                 (name task-a)
+                                                                 (name task-b)))))))))))))))
                     (when (children task)
                       (htm
                        (map nil
@@ -116,7 +131,10 @@
                                (:th "Progress")
                                (when show-resources
                                  (htm
-                                  (:th "Resources"))))
+                                  (:th "Resources")))
+                               (when show-dependencies
+                                 (htm
+                                  (:th "Dependencies"))))
                               (%print-task-tree-html task indent)))))))))
       path)))
 

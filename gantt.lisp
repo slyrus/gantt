@@ -23,6 +23,7 @@
            #:task-cost
            #:task-progress
            #:task-resources
+           #:task-dependencies
 
            #:resource
            #:defresource
@@ -31,7 +32,6 @@
            #:dependency
            #:add-dependency
 
-           #:dependencies
            #:start
            #:end
            #:duration
@@ -50,7 +50,7 @@
    (parent :initarg :parent :accessor parent :initform nil)
    (start :initarg :start :accessor task-start :initform nil)
    (duration :initarg :duration :accessor duration :initform nil)
-   (dependencies :initarg :dependencies :accessor dependencies :initform nil)
+   (dependencies :initarg :dependencies :accessor task-dependencies :initform nil)
    (cost :initarg :cost :accessor task-cost :initform nil)
    (progress :initarg :progress :accessor task-progress :initform nil)
    (resources :initarg :resources :accessor task-resources :initform nil)))
@@ -97,8 +97,8 @@
   (with-accessors ((a task-a)
                    (b task-b))
       dependency
-    (pushnew dependency (dependencies a) :key #'task-b)
-    (pushnew dependency (dependencies b) :key #'task-a)))
+    (pushnew dependency (task-dependencies a) :key #'task-b)
+    (pushnew dependency (task-dependencies b) :key #'task-a)))
 
 (defun add-dependency (dep-a dep-b)
   (destructuring-bind (dep-a-obj dep-a-type)
@@ -292,8 +292,9 @@
                                (let ((dep-task
                                       (loop for parent-task in task-tree
                                          thereis (find-task dependency parent-task))))
-                                 (when dep-task
-                                   (add-dependency dep-task task)))))
+                                 (if dep-task
+                                     (add-dependency dep-task task)
+                                     (warn "Missing dependency ~A" dependency)))))
                         (when resources
                           (loop for resource in resources
                              do
