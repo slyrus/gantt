@@ -42,8 +42,10 @@
                             (htm (:span :class "toggle"))))
                          (:td :style
                               (if (plusp (length (children task)))
-                                  (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
-                                  (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
+                                  (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;"
+                                          0 indent)
+                                  (format nil "text-indent: ~Dem; padding-left: ~Dem;"
+                                          0 indent))
                               (str (name task)))
                          (when show-start
                            (htm
@@ -59,12 +61,14 @@
                            (if (and (not (task-finished-p task)) task-cost)
                                (htm
                                 (:td :style
-                                     (format nil "text-align: right; text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                                     (format nil "text-align: right; text-indent: ~Dem; padding-left: ~Dem;"
+                                             0 indent)
                                      (str (format nil "~@[$~,'*:D~]" task-cost))))
                                (htm
                                 (:td :style
                                      (if (plusp (length (children task)))
-                                         (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;" 0 indent)
+                                         (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;"
+                                                 0 indent)
                                          (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
                                      (str (format nil "~@[$~,'*:D~]" (cost task)))))))
                          (:td (str (if (task-finished-p task)
