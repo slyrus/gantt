@@ -44,7 +44,8 @@
 ;;;
 ;;; task class
 (defclass task ()
-  ((name :initarg :name :accessor name)
+  ((id :initarg :id :accessor id)
+   (name :initarg :name :accessor name :initform nil)
    (children :initarg :children :accessor children :initform (make-array 0 :fill-pointer t))
    (parent :initarg :parent :accessor parent :initform nil)
    (start :initarg :start :accessor task-start :initform nil)
@@ -57,7 +58,7 @@
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
     (pprint-logical-block (out nil)
-      (format out "~s " (name obj))
+      (format out "~S ~S" (id obj) (name obj))
       (pprint-newline :fill out)
       (let ((children (children obj)))
         (when children
@@ -135,7 +136,7 @@
                (format out "~&")
                (dotimes (i indent)
                  (write-char #\space out))
-               (format out "~A" (name task))
+               (format out "~A" (or (name task) (id task)))
                (map nil
                     (lambda (x)
                       (%print-task-tree x (+ indent 2)))
@@ -164,9 +165,11 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (name &key start duration progress cost parent)
-  (apply #'make-instance 'task :name name
-         (append (when start
+(defun deftask (id &key name start duration progress cost parent)
+  (apply #'make-instance 'task :id id
+         (append (when name
+                   `(:name ,name))
+                 (when start
                    `(:start ,start))
                  (when duration
                    `(:duration ,(if (stringp duration)
@@ -180,14 +183,14 @@
                    `(:parent ,parent)))))
 
 ;;; find-task looks DOWN in task tree
-(defun find-task (name task &key (test #'equal))
+(defun find-task (id task &key (test #'equal))
   (labels ((%find-task (task)
              (when task
                (if 
-                (and (atom task) (funcall test (name task) name))
+                (and (atom task) (funcall test (id task) id))
                 (return-from find-task task)
                 (let ((children (children task)))
-                  (find name children :key #'%find-task :test test))))))
+                  (find id children :key #'%find-task :test test))))))
     (%find-task task)))
 
 (defun add-resource (resource task)
@@ -274,12 +277,13 @@
        append (list key value)))
 
 (defun read-task (task-spec &optional task-tree)
+  (declare (optimize (debug 3)))
   (let ((atom-or-list (car task-spec)))
     (let ((task (if (atom atom-or-list)
                     (deftask atom-or-list)
-                    (destructuring-bind (name &rest args &key depends-on resources &allow-other-keys)
+                    (destructuring-bind (id &rest args &key depends-on resources &allow-other-keys)
                         atom-or-list
-                      (let ((task (apply #'deftask name
+                      (let ((task (apply #'deftask id
                                          :parent (car task-tree)
                                          (remove-keyword-arg args '(:resources :depends-on)))))
                         (when depends-on
