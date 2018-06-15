@@ -4,7 +4,10 @@
 (defmacro with-html-output* (args &body (body))
   `(cl-who:with-html-output ,args ,@(eval body)))
 
-(defparameter *row-colors* '("#fff" "#eee" "#ddd" "#ccc" "#bbb" "#aaa"))
+(defparameter *row-colors* '("#ffffff" "#f7f7f7"
+                             "#efefef" "#e7e7e7"
+                             "#dfdfdf" "#d7d7d7"
+                             "#cfcfcf" "#c7c7c7"))
 
 (defun write-task-tree-html (path task &key (indent 0)
                                             (show-start t)
