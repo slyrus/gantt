@@ -34,4 +34,11 @@ $(function() {
         }
         return children;
     });
+    Array.from(document.getElementsByClassName('progress')).forEach(function(element) {
+        pct = parseFloat(element.innerHTML);
+        if (!isNaN(pct)) {
+            element.innerHTML = (pct * 100) + "%";
+        }
+    });
 });
+

@@ -10,6 +10,10 @@
     display: inline-block;
 }
 
+.progress {
+    text-align: right;
+}
+
 table {
     border-collapse:separate;
     margin-left:auto;

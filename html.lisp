@@ -75,9 +75,10 @@
                                                    0 indent)
                                            (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
                                        (str (format nil "~@[$~,'*:D~]" (cost task)))))))
-                           (:td (str (if (task-finished-p task)
-                                         "Finished"
-                                         (task-progress task))))
+                           (:td ((:div :class "progress")
+                                      (str (if (task-finished-p task)
+                                               "Finished"
+                                               (task-progress task)))))
                            (when show-resources
                              (htm
                               (:td
