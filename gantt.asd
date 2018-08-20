@@ -7,4 +7,5 @@
   :components
   ((:file "gantt")
    (:file "date-reader")
-   (:file "html")))
+   (:file "html")
+   (:file "mermaid")))
