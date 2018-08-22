@@ -11,15 +11,19 @@
                    (seconds time-interval::interval-seconds)
                    (nanoseconds time-interval::interval-nanoseconds))
       interval
-    (let ((mermaid-weeks (+ (* 52 years) (+ 4.5 months) weeks)))
-      (format stream "~@[~Dw~] ~@[~Dd~] ~@[~Dh~]"
-              (unless (zerop weeks) (round mermaid-weeks))
+    (let ((mermaid-weeks (+ (* 52 years) (* 4.5 months) weeks)))
+      (format stream "~@[ ~Dw~]~@[ ~Dd~]~@[~Dh~]"
+              (unless (zerop mermaid-weeks) (round mermaid-weeks))
               (unless (zerop days) (round days))
               (unless (zerop hours) (round hours))))))
 
 
 (defparameter *start-cutoff-date*
   (local-time:encode-timestamp 0 0 0 0 1 1 2018))
+
+(defun last-ending-task (tasks)
+  (sort tasks #'local-time:timestamp> :key 'task-end))
+
 (defun write-mermaid-file (file task &key (show-finished-tasks t)
                                           (show-start t)
                                           (show-end t)
