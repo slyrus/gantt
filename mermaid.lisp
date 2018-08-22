@@ -22,7 +22,7 @@
   (local-time:encode-timestamp 0 0 0 0 1 1 2018))
 
 (defun last-ending-task (tasks)
-  (sort tasks #'local-time:timestamp> :key 'task-end))
+  (sort (remove-if #'null tasks :key 'task-end) #'local-time:timestamp> :key 'task-end))
 
 (defun write-mermaid-file (file task &key (show-finished-tasks t)
                                           (show-start t)
@@ -66,7 +66,8 @@
                        (format s "~A,"
                                (id task))
                        (if prereqs
-                           (format s "after ~A," (id (car (last-ending-task prereqs))))
+                           (format s "after ~A," (id (car (or (last-ending-task prereqs)
+                                                              prereqs))))
                            (format s "~A,"
                                    (local-time:format-timestring nil start :format local-time:+iso-8601-date-format+)))
                        (format s "~A~&"
