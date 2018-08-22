@@ -209,6 +209,12 @@
                   (find name children :key #'%find-resource :test test))))))
     (%find-resource resource)))
 
+(defun top-task (task)
+  (let ((parent (parent task)))
+    (if parent
+        (top-task parent)
+        task)))
+
 (defgeneric task-end (task))
 
 (defmethod task-end ((obj task))
