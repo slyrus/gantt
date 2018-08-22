@@ -117,6 +117,27 @@
                                       :task-b dep-b-obj
                                       :dependency-type-b dep-b-type)))))
 
+(defun other-task (dependency task)
+  (let ((taska (task-a dependency)))
+    (if (eql taska task)
+        (values (task-b dependency) (dependency-type-b dependency))
+        (values (task-a dependency) (dependency-type-a dependency)))))
+
+(defun self-task (dependency task)
+  (let ((taska (task-a dependency)))
+    (if (eql taska task)
+        (values (task-a dependency) (dependency-type-a dependency))
+        (values (task-b dependency) (dependency-type-b dependency)))))
+
+(defun prerequisite-tasks (task)
+  (declare (optimize (debug 3)))
+  (let ((deps (task-dependencies task)))
+    (loop for dep in deps
+       append (multiple-value-bind (taska self-type)
+                  (self-task dep task)
+                (declare (ignore taska))
+                (when (eql :start self-type)
+                  (list (other-task dep task)))))))
 ;;;
 ;;; resource class
 (defclass resource ()
