@@ -242,9 +242,7 @@
   (cond ((and (task-start obj)
               (duration obj))
          (time-interval:t+
-          (task-start obj) (duration obj)))
-        ((task-start obj)
-         (task-start obj))))
+          (task-start obj) (duration obj)))))
 
 (defun task-finished-p (task)
   (let ((progress (task-progress task)))
