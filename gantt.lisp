@@ -277,7 +277,7 @@
                       ((null b) a)
                       (t (timestamp-minimum a b))))
               (let ((children (children task)))
-                (map (type-of children) #'start children)))))
+                (map 'vector #'start children)))))
 
 (defun end (task)
   (or (task-end task)
@@ -286,7 +286,7 @@
                       ((null b) a)
                       (t (timestamp-maximum a b))))
               (let ((children (children task)))
-                (map (type-of children) #'end children)))))
+                (map 'vector #'end children)))))
 
 (defun cost (task)
   (unless (task-finished-p task)
@@ -296,7 +296,7 @@
                         ((null b) a)
                         (t (+ a b))))
                 (let ((children (children task)))
-                  (map (type-of children) #'cost children))))))
+                  (map 'vector #'cost children))))))
 
 (defun remove-keyword-arg (args remove-keys)
   (loop for (key value) on args by #'cddr
