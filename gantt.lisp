@@ -304,7 +304,6 @@
        append (list key value)))
 
 (defun read-task (task-spec &optional task-tree)
-  (declare (optimize (debug 3)))
   (let ((atom-or-list (car task-spec)))
     (let ((task (if (atom atom-or-list)
                     (deftask atom-or-list)
