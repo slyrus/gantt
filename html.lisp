@@ -77,9 +77,9 @@
                                            (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
                                        (str (format nil "~@[$~,'*:D~]" (cost task)))))))
                            (:td ((:div :class "progress")
-                                      (str (if (task-finished-p task)
-                                               "Finished"
-                                               (task-progress task)))))
+                                 (str (if (task-finished-p task)
+                                          "Finished"
+                                          (task-progress task)))))
                            (when show-resources
                              (htm
                               (:td
@@ -125,40 +125,39 @@
            (:html :lang "en"
                   (:head
                    (:meta :charset "utf-8")
-                 (:meta :http-equiv "X-UA-Compatible" :content "ID=edge")
-                 (:meta :name "viewport" :content "width=device-width, initial-scale=1")
-                 (:link :rel "stylesheet" :type "text/css" :href "css/gantt.css")
-                 (:script :src "js/jquery-3.1.1.js" :type "text/javascript")
-                 (:script :src "js/gantt.js" :type "text/javascript")
-                 (:style :type "text/css" "
+                   (:meta :http-equiv "X-UA-Compatible" :content "ID=edge")
+                   (:meta :name "viewport" :content "width=device-width, initial-scale=1")
+                   (:link :rel "stylesheet" :type "text/css" :href "css/gantt.css")
+                   (:script :src "js/jquery-3.1.1.js" :type "text/javascript")
+                   (:script :src "js/gantt.js" :type "text/javascript")
+                   (:style :type "text/css" "
 * { font-family: Arial, Helvetica, sans-serif }
 ")
-                 (:title (str (name task))))
-                (:body
-                 (progn
-                   (htm
-                    (:table :id "mytable"
-                            (:tr
-                             (:th)
-                             (:th "Task Name")
-                             (when show-start
-                               (htm
-                                (:th "Start")))
-                             (when show-end
-                               (htm
-                                (:th "End")))
-                             (:th "Cost")
-                             (:th "Progress")
-                             (when show-resources
-                               (htm
-                                (:th "Resources")))
-                             (when show-dependencies
-                               (htm
-                                (:th "Dependencies")))
-                             (when show-notes
-                               (htm
-                                (:th "Notes")))
-)
-                            (%print-task-tree-html task indent)))))))))
-    path)))
+                   (:title (str (name task))))
+                  (:body
+                   (progn
+                     (htm
+                      (:table :id "mytable"
+                              (:tr
+                               (:th)
+                               (:th "Task Name")
+                               (when show-start
+                                 (htm
+                                  (:th "Start")))
+                               (when show-end
+                                 (htm
+                                  (:th "End")))
+                               (:th "Cost")
+                               (:th "Progress")
+                               (when show-resources
+                                 (htm
+                                  (:th "Resources")))
+                               (when show-dependencies
+                                 (htm
+                                  (:th "Dependencies")))
+                               (when show-notes
+                                 (htm
+                                  (:th "Notes"))))
+                              (%print-task-tree-html task indent)))))))))
+      path)))
 
