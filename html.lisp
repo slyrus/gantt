@@ -14,6 +14,7 @@
                                             (show-start t)
                                             (show-end t)
                                             (show-resources t)
+                                            (show-notes t)
                                             (show-dependencies nil)
                                             (row-colors *row-colors*))
   ;; copy resources to path
@@ -102,7 +103,17 @@
                                                 (htm
                                                  (:li (str (format nil "~A -> ~A"
                                                                    (name task-a)
-                                                                   (name task-b)))))))))))))))
+                                                                   (name task-b))))))))))))))
+                           (when show-notes
+                             (htm
+                              (:td
+                               (let ((notes (task-notes task)))
+                                 (when notes
+                                   (htm (:ul
+                                         (loop for note in notes
+                                            do
+                                              (htm
+                                               (:li (str note))))))))))))
                       (when (children task)
                         (htm
                          (map nil
@@ -143,7 +154,11 @@
                                 (:th "Resources")))
                              (when show-dependencies
                                (htm
-                                (:th "Dependencies"))))
+                                (:th "Dependencies")))
+                             (when show-notes
+                               (htm
+                                (:th "Notes")))
+)
                             (%print-task-tree-html task indent)))))))))
     path)))
 

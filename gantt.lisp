@@ -55,7 +55,8 @@
    (dependencies :initarg :dependencies :accessor task-dependencies :initform nil)
    (cost :initarg :cost :accessor task-cost :initform nil)
    (progress :initarg :progress :accessor task-progress :initform nil)
-   (resources :initarg :resources :accessor task-resources :initform nil)))
+   (resources :initarg :resources :accessor task-resources :initform nil)
+   (notes :initarg :notes :accessor task-notes :initform nil)))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
@@ -152,6 +153,21 @@
 (defun defresource (name)
   (make-instance 'resource :name name))
 
+;;;
+;;; note class
+(defclass note ()
+  ((name :initarg :name :accessor name)))
+
+(defmethod print-object ((obj note) out)
+  (print-unreadable-object (obj out :type t :identity t)
+    (with-accessors ((name name ))
+        obj
+      (write name :stream out))))
+
+(defun defnote (name)
+  (make-instance 'note :name name))
+
+
 (defun print-task-tree (task &key stream (indent 0))
   (let ((out (or stream
                  (make-string-output-stream))))
@@ -188,7 +204,7 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (id &key name start duration progress cost parent)
+(defun deftask (id &key name start duration progress cost parent notes)
   (apply #'make-instance 'task :id id
          (append (when name
                    `(:name ,name))
@@ -203,7 +219,9 @@
                  (when progress
                    `(:progress ,progress))
                  (when parent
-                   `(:parent ,parent)))))
+                   `(:parent ,parent))
+                 (when notes
+                   `(:notes ,notes)))))
 
 ;;; find-task looks DOWN in task tree
 (defun find-task (id task &key (test #'equal))
@@ -229,6 +247,9 @@
                 (let ((children (children resource)))
                   (find name children :key #'%find-resource :test test))))))
     (%find-resource resource)))
+
+(defun add-note (note task)
+  (pushnew note (task-notes task)))
 
 (defun top-task (task)
   (let ((parent (parent task)))
@@ -307,7 +328,9 @@
   (let ((atom-or-list (car task-spec)))
     (let ((task (if (atom atom-or-list)
                     (deftask atom-or-list)
-                    (destructuring-bind (id &rest args &key depends-on resources &allow-other-keys)
+                    (destructuring-bind (id &rest args
+                                            &key depends-on resources
+                                            &allow-other-keys)
                         atom-or-list
                       (let ((task (apply #'deftask id
                                          :parent (car task-tree)
