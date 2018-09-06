@@ -16,6 +16,7 @@
                                             (show-resources t)
                                             (show-notes t)
                                             (show-dependencies nil)
+                                            (show-prerequisite-tasks nil)
                                             (row-colors *row-colors*))
   ;; copy resources to path
   (let ((dest-directory (pathname-directory (merge-pathnames *default-pathname-defaults* path))))
@@ -90,6 +91,16 @@
                                             do
                                               (htm
                                                (:li (str (name resource))))))))))))
+                           (when show-prerequisite-tasks
+                             (htm
+                              (:td
+                               (let ((prereqs (prerequisite-tasks task)))
+                                 (when prereqs
+                                   (htm (:ul
+                                         (loop for prereq in prereqs
+                                            do
+                                              (htm
+                                               (:li (str (format nil "~A" (name prereq)))))))))))))
                            (when show-dependencies
                              (htm
                               (:td
@@ -152,6 +163,9 @@
                                (when show-resources
                                  (htm
                                   (:th "Resources")))
+                               (when show-prerequisite-tasks
+                                 (htm
+                                  (:th "Prerequisite Tasks")))
                                (when show-dependencies
                                  (htm
                                   (:th "Dependencies")))
