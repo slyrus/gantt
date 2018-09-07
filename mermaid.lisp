@@ -54,7 +54,7 @@
                                 (and start (local-time:timestamp> start start-cutoff-date)))
                        (format s "~&~A :"
                                (name task))
-                       (format s "~@[~A,~]"
+                       (format s "~@[~A, ~]"
                                (cond ((and (task-progress task)
                                            (>= (task-progress task) 1.0))
                                       "done")
@@ -63,6 +63,9 @@
                                            (> (task-progress task) 0))
                                       "active")
                                      (t  nil)))
+                       (format s "~@[~A, ~]"
+                               (when (task-critical task)
+                                 "crit"))
                        (format s "~A,"
                                (id task))
                        (if prereqs

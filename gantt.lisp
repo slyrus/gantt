@@ -56,7 +56,8 @@
    (cost :initarg :cost :accessor task-cost :initform nil)
    (progress :initarg :progress :accessor task-progress :initform nil)
    (resources :initarg :resources :accessor task-resources :initform nil)
-   (notes :initarg :notes :accessor task-notes :initform nil)))
+   (notes :initarg :notes :accessor task-notes :initform nil)
+   (critical :initarg :critical :accessor task-critical :initform nil)))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
@@ -204,7 +205,7 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (id &key name start duration progress cost parent notes)
+(defun deftask (id &key name start duration progress cost parent notes critical)
   (apply #'make-instance 'task :id id
          (append (when name
                    `(:name ,name))
@@ -221,7 +222,9 @@
                  (when parent
                    `(:parent ,parent))
                  (when notes
-                   `(:notes ,notes)))))
+                   `(:notes ,notes))
+                 (when critical
+                   `(:critical ,critical)))))
 
 ;;; find-task looks DOWN in task tree
 (defun find-task (id task &key (test #'equal))
