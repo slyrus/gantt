@@ -304,13 +304,26 @@
                 (map 'vector #'start children)))))
 
 (defun end (task)
-  (or (task-end task)
-      (reduce (lambda (&optional a b)
-                (cond ((null a) b)
-                      ((null b) a)
-                      (t (timestamp-maximum a b))))
-              (let ((children (children task)))
-                (map 'vector #'end children)))))
+  (or
+   ;; use task end if provided
+   (task-end task)
+
+   ;; if not use task end of children
+   (reduce (lambda (&optional a b)
+             (cond ((null a) b)
+                   ((null b) a)
+                   (t (timestamp-maximum a b))))
+           (let ((children (children task)))
+             (map 'vector #'end children)))
+
+   ;; FIXME! This should probably the later of these two
+   ;; finally, if neither of the above, use the end of the prereqs + the duration
+   (let ((last-prereq (last-ending-task (prerequisite-tasks task))))
+     (when last-prereq
+       (if (duration task)
+           (time-interval:t+
+            (end last-prereq) (duration task))
+           (end last-prereq))))))
 
 (defun cost (task)
   (unless (task-finished-p task)
