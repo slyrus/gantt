@@ -21,9 +21,6 @@
 (defparameter *start-cutoff-date*
   (local-time:encode-timestamp 0 0 0 0 1 1 2018))
 
-(defun last-ending-task (tasks)
-  (sort (remove-if #'null tasks :key 'task-end) #'local-time:timestamp> :key 'task-end))
-
 (defun write-mermaid-file (file task &key (show-finished-tasks t)
                                           (show-start t)
                                           (show-end t)
@@ -69,8 +66,8 @@
                        (format s "~A,"
                                (id task))
                        (if prereqs
-                           (format s "after ~A," (id (car (or (last-ending-task prereqs)
-                                                              prereqs))))
+                           (format s "after ~A," (id (or (last-ending-task prereqs)
+                                                         (car prereqs))))
                            (format s "~A,"
                                    (local-time:format-timestring nil start :format local-time:+iso-8601-date-format+)))
                        (format s "~A~&"
