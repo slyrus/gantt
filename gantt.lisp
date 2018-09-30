@@ -73,6 +73,14 @@
                (pprint-newline :fill out)))
           (pprint-newline :fill out))))))
 
+;;
+;; handy trick: now we can traverse child indices like so:
+;;
+;; (reduce #'gantt::task-child (list gantt-example::*example-project* 3 1))
+;;
+(defun task-child (task &optional (index 0))
+  (elt (children task) index))
+
 ;;;
 ;;; dependency class
 (defclass dependency ()
