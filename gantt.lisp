@@ -29,6 +29,7 @@
            #:task-resources
            #:task-dependencies
            #:task-child
+           #:task-critical
 
            #:resource
            #:defresource
