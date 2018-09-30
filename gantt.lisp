@@ -307,15 +307,25 @@
 
 (defun start (task)
   (or (task-start task)
-      (reduce (lambda (&optional a b)
-                (cond ((null a) b)
-                      ((null b) a)
-                      (t (timestamp-minimum a b))))
-              (let ((children (children task)))
-                (map 'vector #'start children)))))
+      (let ((first-child-start (first-child-task-start task))
+            (last-prereq-end (last-prereq-task-end task)))
+        (cond ((and first-child-start last-prereq-end)
+               (apply #'local-time:timestamp-maximum
+                      (append (alexandria:ensure-list (first-child-task-start task))
+                              (alexandria:ensure-list (last-prereq-task-end task)))))
+              (first-child-start first-child-start)
+              (last-prereq-end last-prereq-end)))))
 
 (defun last-ending-task (tasks)
   (car (sort (remove-if #'null tasks :key 'end) #'local-time:timestamp> :key 'end)))
+
+(defun first-child-task-start (task)
+  (reduce (lambda (&optional a b)
+            (cond ((null a) b)
+                  ((null b) a)
+                  (t (timestamp-minimum a b))))
+          (let ((children (children task)))
+            (map 'vector #'start children))))
 
 (defun last-child-task-end (task)
   (reduce (lambda (&optional a b)
