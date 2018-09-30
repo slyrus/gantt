@@ -347,11 +347,17 @@
   ;; use task end if provided
   (or (task-end task)
       ;; if not use the latter of task-end of children or the end of the prereqs + the duration
-      (let ((candidate-end-timestamps
-             (append (alexandria:ensure-list (last-child-task-end task))
-                     (alexandria:ensure-list (last-prereq-task-end task)))))
-        (when candidate-end-timestamps
-          (apply #'local-time:timestamp-maximum candidate-end-timestamps)))))
+      (let ((prereq-ends (last-prereq-task-end task))
+            (duration (duration task)))
+        (let ((candidate-end-timestamps
+               (append (alexandria:ensure-list (last-child-task-end task))
+                       (alexandria:ensure-list
+                        (when prereq-ends
+                          (if duration
+                              (time-interval:t+ prereq-ends duration)
+                              prereq-ends))))))
+          (when candidate-end-timestamps
+            (apply #'local-time:timestamp-maximum candidate-end-timestamps))))))
 
 (defun cost (task)
   (unless (task-finished-p task)
