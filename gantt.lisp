@@ -15,8 +15,10 @@
                 #:htm
                 #:str)
   (:export #:task
+           #:name
            #:add-task
            #:find-task
+           #:find-task-named
            #:deftask
            #:defproject
            #:defgroup
@@ -26,6 +28,7 @@
            #:task-progress
            #:task-resources
            #:task-dependencies
+           #:task-child
 
            #:resource
            #:defresource
