@@ -226,16 +226,19 @@
                  (when critical
                    `(:critical ,critical)))))
 
-;;; find-task looks DOWN in task tree
-(defun find-task (id task &key (test #'equal))
+;; find-task looks DOWN in task tree
+(defun find-task (item task &key (test #'equal) (key #'id))
   (labels ((%find-task (task)
              (when task
                (if 
-                (and (atom task) (funcall test (id task) id))
+                (and (atom task) (funcall test (funcall key task) item))
                 (return-from find-task task)
                 (let ((children (children task)))
-                  (find id children :key #'%find-task :test test))))))
+                  (find item children :key #'%find-task :test test))))))
     (%find-task task)))
+
+(defun find-task-named (name task)
+  (find-task name task :key #'name))
 
 (defun add-resource (resource task)
   (pushnew resource (task-resources task)))
