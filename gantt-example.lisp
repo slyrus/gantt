@@ -23,16 +23,46 @@
        :duration "2W"
        :resources ("Hardly Wood Floors")
        :depends-on (:demo)))
+     ((:electrical :name "Electrical")
+      ((:run-wires
+        :name "Run Wires"
+        :start @2018-09-01
+        :duration "2W"
+        :critical t
+        :depends-on (:demo)))
+      ((:install-outlets
+        :name "Install Outlets"
+        :duration "1W"
+        :depends-on (:run-wires)))
+      ((:install-lights
+        :name "Install Lights"
+        :duration "1W"
+        :critical t
+        :depends-on (:run-wires))))
      ((:drywall
        :name "Drywall"
        :start @2018-10-01
        :duration "2W"
-       :depends-on (:demo)))
+       :critical t
+       :depends-on (:demo :run-wires)))
+     ((:ceiling :name "Ceiling")
+      ((:install-ceiling
+        :name "Install Ceiling"
+        :start @2018-10-01
+        :duration "2W"
+        :critical t
+        :depends-on (:demo)))
+      ((:install-ceiling
+        :name "Paint Ceiling"
+        :duration "2W"
+        :critical t
+        :depends-on (:install-ceiling))))
      ((:cabinets :name "New Cabinets")
       ((:install-cabinets
         :name "Install Cabinets"
         :start @2018-10-15
         :duration "4W"
+        :critical t
         :depends-on (:demo :drywall)))
       ((:paint-cabinets
         :name "Paint Cabinets"
