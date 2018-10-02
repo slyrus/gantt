@@ -343,10 +343,7 @@
 (defun last-prereq-task-end (task)
   (let ((last-prereq (last-ending-task (prerequisite-tasks task))))
      (when last-prereq
-       (if (duration task)
-           (time-interval:t+
-            (end last-prereq) (duration task))
-           (end last-prereq)))))
+       (end last-prereq))))
 
 (defun end (task)
   ;; use task end if provided
