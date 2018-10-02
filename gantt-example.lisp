@@ -44,6 +44,7 @@
        :start @2018-10-01
        :duration "2W"
        :critical t
+       :notes ("Drywall installer is crazy.")
        :depends-on (:demo :run-wires)))
      ((:ceiling :name "Ceiling")
       ((:install-ceiling
@@ -56,6 +57,10 @@
         :name "Paint Ceiling"
         :duration "2W"
         :critical t
+        :notes ("What color are we going to use?"
+                "Who is going to paint this?"
+                "This is another note."
+                "And another.")
         :depends-on (:install-ceiling))))
      ((:cabinets :name "New Cabinets")
       ((:install-cabinets
