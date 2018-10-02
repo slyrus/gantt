@@ -27,6 +27,7 @@
            #:task-cost
            #:task-progress
            #:task-resources
+           #:task-notes
            #:task-dependencies
            #:task-child
            #:task-critical
