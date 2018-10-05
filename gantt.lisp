@@ -30,6 +30,7 @@
            #:task-notes
            #:task-dependencies
            #:task-child
+           #:task-children
            #:task-critical
 
            #:resource
