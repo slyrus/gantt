@@ -43,6 +43,9 @@
            #:end
            #:duration
 
+           #:first-child-task-start
+           #:last-child-task-end
+
            #:print-task-tree
            #:read-task))
 
@@ -53,7 +56,7 @@
 (defclass task ()
   ((id :initarg :id :accessor id)
    (name :initarg :name :accessor name :initform nil)
-   (children :initarg :children :accessor children :initform (make-array 0 :fill-pointer t))
+   (children :initarg :children :accessor task-children :initform (make-array 0 :fill-pointer t))
    (parent :initarg :parent :accessor parent :initform nil)
    (start :initarg :start :accessor task-start :initform nil)
    (duration :initarg :duration :accessor duration :initform nil)
@@ -69,7 +72,7 @@
     (pprint-logical-block (out nil)
       (format out "~S ~S" (id obj) (name obj))
       (pprint-newline :fill out)
-      (let ((children (children obj)))
+      (let ((children (task-children obj)))
         (when children
           (pprint-logical-block (out children :prefix "#(" :suffix ")")
             (loop (write (pprint-pop) :stream out) 
@@ -84,7 +87,7 @@
 ;; (reduce #'gantt::task-child (list gantt-example::*example-project* 3 1))
 ;;
 (defun task-child (task &optional (index 0))
-  (elt (children task) index))
+  (elt (task-children task) index))
 
 ;;;
 ;;; dependency class
@@ -193,7 +196,7 @@
                (map nil
                     (lambda (x)
                       (%print-task-tree x (+ indent 2)))
-                    (children task))))
+                    (task-children task))))
       (%print-task-tree task indent))
     (unless stream
       (get-output-stream-string out))))
@@ -202,8 +205,8 @@
   (let (list)
     (labels ((traverse (subtree)
                (when subtree
-                 (when (children subtree)
-                   (map nil #'traverse (children subtree)))
+                 (when (task-children subtree)
+                   (map nil #'traverse (task-children subtree)))
                  (push subtree list))))
       (traverse tree))
     (nreverse list)))
@@ -246,7 +249,7 @@
                (if 
                 (and (atom task) (funcall test (funcall key task) item))
                 (return-from find-task task)
-                (let ((children (children task)))
+                (let ((children (task-children task)))
                   (find item children :key #'%find-task :test test))))))
     (%find-task task)))
 
@@ -263,7 +266,7 @@
                (if
                 (and (atom resource) (funcall test (name resource) name))
                 (return-from find-resource resource)
-                (let ((children (children resource)))
+                (let ((children (task-children resource)))
                   (find name children :key #'%find-resource :test test))))))
     (%find-resource resource)))
 
@@ -290,7 +293,7 @@
 
 ;; functions
 (defun add-child (parent child)
-  (vector-push-extend child (children parent)))
+  (vector-push-extend child (task-children parent)))
 
 (defun add-task (parent child &key start duration depends-on)
   "Adds a task to the parent and returns the added (child) task."
@@ -329,7 +332,7 @@
             (cond ((null a) b)
                   ((null b) a)
                   (t (timestamp-minimum a b))))
-          (let ((children (children task)))
+          (let ((children (task-children task)))
             (map 'vector #'start children))))
 
 (defun last-child-task-end (task)
@@ -337,7 +340,7 @@
             (cond ((null a) b)
                   ((null b) a)
                   (t (timestamp-maximum a b))))
-          (let ((children (children task)))
+          (let ((children (task-children task)))
             (map 'vector #'end children))))
 
 (defun last-prereq-task-end (task)
@@ -368,7 +371,7 @@
                   (cond ((null a) b)
                         ((null b) a)
                         (t (+ a b))))
-                (let ((children (children task)))
+                (let ((children (task-children task)))
                   (map 'vector #'cost children))))))
 
 (defun remove-keyword-arg (args remove-keys)
