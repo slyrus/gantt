@@ -35,11 +35,11 @@
     (format s "~&title ~A~%~%" (name task))
 
     (labels ((%print-task-tree-mermaid (task &key start (level 0))
-               (print (list (name task) (length (children task))))
-               (if (plusp (length (children task)))
+               (print (list (name task) (length (task-children task))))
+               (if (plusp (length (task-children task)))
                    (progn
                      (format s "~&section ~A~%" (name task))
-                     (loop :for child :across (children task)
+                     (loop :for child :across (task-children task)
                         :do (%print-task-tree-mermaid child
                                                       :start (or (task-start task) start)
                                                       :level (1+ level))))

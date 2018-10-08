@@ -44,10 +44,10 @@
                                   (color (elt row-colors index)))
                              (format nil "background-color: ~A;" color))
                            (:td
-                            (when (plusp (length (children task)))
+                            (when (plusp (length (task-children task)))
                               (htm (:span :class "toggle"))))
                            (:td :style
-                                (if (plusp (length (children task)))
+                                (if (plusp (length (task-children task)))
                                     (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;"
                                             0 indent)
                                     (format nil "text-indent: ~Dem; padding-left: ~Dem;"
@@ -72,7 +72,7 @@
                                        (str (format nil "~@[$~,'*:D~]" task-cost))))
                                  (htm
                                   (:td :style
-                                       (if (plusp (length (children task)))
+                                       (if (plusp (length (task-children task)))
                                            (format nil "font-weight: bold; text-indent: ~Dem; padding-left: ~Dem;"
                                                    0 indent)
                                            (format nil "text-indent: ~Dem; padding-left: ~Dem;" 0 indent))
@@ -125,13 +125,13 @@
                                             do
                                               (htm
                                                (:li (str note))))))))))))
-                      (when (children task)
+                      (when (task-children task)
                         (htm
                          (map nil
                               (lambda (x)
                                 (htm
                                  (str (%print-task-tree-html x (+ indent 1)))))
-                              (children task))))))))
+                              (task-children task))))))))
           (htm
            (:html :lang "en"
                   (:head
