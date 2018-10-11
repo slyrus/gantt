@@ -40,6 +40,8 @@
            #:dependency
            #:add-dependency
 
+           #:cost
+
            #:start
            #:end
            #:duration
