@@ -367,15 +367,15 @@
           (when candidate-end-timestamps
             (apply #'local-time:timestamp-maximum candidate-end-timestamps))))))
 
-(defun cost (task)
-  (unless (task-finished-p task)
+(defun cost (task &key include-finished)
+  (unless (and (task-finished-p task) (not include-finished))
     (or (task-cost task)
         (reduce (lambda (&optional a b)
                   (cond ((null a) b)
                         ((null b) a)
                         (t (+ a b))))
                 (let ((children (task-children task)))
-                  (map 'vector #'cost children))))))
+                  (map 'vector (lambda (x) (cost x :include-finished include-finished)) children))))))
 
 (defun remove-keyword-arg (args remove-keys)
   (loop for (key value) on args by #'cddr
