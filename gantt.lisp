@@ -15,6 +15,7 @@
                 #:htm
                 #:str)
   (:export #:task
+           #:taskp
            #:name
            #:add-task
            #:find-task
@@ -83,6 +84,11 @@
                (write-char #\space out) 
                (pprint-newline :fill out)))
           (pprint-newline :fill out))))))
+
+(defgeneric taskp (object)
+  (:documentation "Returns T if OBJECT is a TASK.")
+  (:method ((object task))
+    t))
 
 ;;
 ;; handy trick: now we can traverse child indices like so:
