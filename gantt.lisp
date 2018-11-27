@@ -51,7 +51,9 @@
            #:last-child-task-end
 
            #:print-task-tree
-           #:read-task))
+           #:read-task
+
+           #:unscheduled-tasks))
 
 (cl:in-package :gantt)
 
@@ -278,6 +280,10 @@
                 (let ((children (task-children resource)))
                   (find name children :key #'%find-resource :test test))))))
     (%find-resource resource)))
+
+(defun unscheduled-tasks (task)
+  (remove-if-not #'null (flatten-task-tree task)
+                 :key (lambda (x) (and (start x) (end x)))))
 
 (defun add-note (note task)
   (pushnew note (task-notes task)))
