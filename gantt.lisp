@@ -232,12 +232,18 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (id &key name start duration progress cost parent notes critical)
+(defun deftask (id &key name start end duration progress cost parent notes critical)
+  (cond ((and end duration)
+         (error "can only specify end or duration"))
+        ((and end (null start))
+         (error "end specified without start")))
   (apply #'make-instance 'task :id id
          (append (when name
                    `(:name ,name))
                  (when start
                    `(:start ,start))
+                 (when end
+                   `(:duration ,(time-interval:t- end start)))
                  (when duration
                    `(:duration ,(if (stringp duration)
                                     (time-interval:parse-time-interval-string duration)
