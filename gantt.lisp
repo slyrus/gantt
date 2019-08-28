@@ -71,7 +71,11 @@
    (progress :initarg :progress :accessor task-progress :initform nil)
    (resources :initarg :resources :accessor task-resources :initform nil)
    (notes :initarg :notes :accessor task-notes :initform nil)
-   (critical :initarg :critical :accessor task-critical :initform nil)))
+   (critical :initarg :critical :accessor task-critical :initform nil)
+   (type :initarg :task-type
+         :accessor task-type
+         :initform :task
+         :type (member :project :task :group :milestone))))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
