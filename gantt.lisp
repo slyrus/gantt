@@ -174,16 +174,21 @@
 ;;;
 ;;; resource class
 (defclass resource ()
-  ((name :initarg :name :accessor name)))
+  ((name :initarg :name :accessor name)
+   (id :initarg :id :accessor id)))
 
 (defmethod print-object ((obj resource) out)
   (print-unreadable-object (obj out :type t :identity t)
-    (with-accessors ((name name ))
+    (with-accessors ((name name))
         obj
       (write name :stream out))))
 
-(defun defresource (name)
-  (make-instance 'resource :name name))
+(defun defresource (name &key id)
+  (apply #'make-instance 'resource
+         :name name
+         (append
+          (when id
+            `(:id ,id)))))
 
 ;;;
 ;;; note class
@@ -281,14 +286,24 @@
   (pushnew resource (task-resources task)))
 
 ;;; Resource looks UP in task tree
-(defun find-resource (name resource &key (test #'equal))
+(defun find-resource-named (name resource &key (test #'equal))
   (labels ((%find-resource (resource)
              (when resource
                (if
                 (and (atom resource) (funcall test (name resource) name))
-                (return-from find-resource resource)
+                (return-from find-resource-named resource)
                 (let ((children (task-children resource)))
                   (find name children :key #'%find-resource :test test))))))
+    (%find-resource resource)))
+
+(defun find-resource (id resource &key (test #'equal))
+  (labels ((%find-resource (resource)
+             (when resource
+               (if
+                (and (atom resource) (funcall test (id resource) id))
+                (return-from find-resource resource)
+                (let ((children (task-children resource)))
+                  (find id children :key #'%find-resource :test test))))))
     (%find-resource resource)))
 
 (defun unscheduled-tasks (task)
@@ -429,7 +444,7 @@
                              do
                                (let ((rsrc
                                       (loop for parent-task in task-tree
-                                         thereis (find-resource resource parent-task))))
+                                         thereis (find-resource-named resource parent-task))))
                                  (if rsrc
                                      (add-resource rsrc task)
                                      (let ((rsrc (defresource resource)))
