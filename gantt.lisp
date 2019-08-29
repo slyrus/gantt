@@ -72,7 +72,7 @@
    (resources :initarg :resources :accessor task-resources :initform nil)
    (notes :initarg :notes :accessor task-notes :initform nil)
    (critical :initarg :critical :accessor task-critical :initform nil)
-   (type :initarg :task-type
+   (type :initarg :type
          :accessor task-type
          :initform :task
          :type (member :project :task :group :milestone))))
@@ -241,7 +241,7 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
-(defun deftask (id &key name start end duration progress cost parent notes critical)
+(defun deftask (id &key name start end duration progress cost parent notes critical type)
   (cond ((and end duration)
          (error "can only specify end or duration"))
         ((and end (null start))
@@ -266,7 +266,9 @@
                  (when notes
                    `(:notes ,notes))
                  (when critical
-                   `(:critical ,critical)))))
+                   `(:critical ,critical))
+                 (when type
+                   `(:type ,type)))))
 
 ;; find-task looks DOWN in task tree
 (defun find-task (item task &key (test #'equal) (key #'id))
