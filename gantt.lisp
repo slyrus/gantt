@@ -33,6 +33,7 @@
            #:task-child
            #:task-children
            #:task-critical
+           #:task-type
 
            #:resource
            #:defresource
@@ -75,7 +76,7 @@
    (type :initarg :type
          :accessor task-type
          :initform :task
-         :type (member :project :task :group :milestone))))
+         :type (member :project :task :group :subgroup :milestone))))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
@@ -175,6 +176,10 @@
 ;;; resource class
 (defclass resource ()
   ((name :initarg :name :accessor name)
+   (type :initarg :type
+         :accessor resource-type
+         :initform nil
+         :type (member nil :person :project))
    (id :initarg :id :accessor id)))
 
 (defmethod print-object ((obj resource) out)
@@ -183,12 +188,14 @@
         obj
       (write name :stream out))))
 
-(defun defresource (name &key id)
+(defun defresource (name &key id type)
   (apply #'make-instance 'resource
          :name name
          (append
           (when id
-            `(:id ,id)))))
+            `(:id ,id))
+          (when type
+            `(:type ,type)))))
 
 ;;;
 ;;; note class
