@@ -76,7 +76,7 @@
    (type :initarg :type
          :accessor task-type
          :initform :task
-         :type (member :project :task :group :subgroup :milestone))))
+         :type (member :project :task :group :milestone))))
 
 (defmethod print-object ((obj task) out)
   (print-unreadable-object (obj out :type t :identity t)
