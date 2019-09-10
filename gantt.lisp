@@ -429,7 +429,8 @@
        append (list key value)))
 
 (defun read-task (task-spec &optional task-tree)
-  (let ((atom-or-list (car task-spec)))
+  (let ((atom-or-list (car task-spec))
+        (children (cdr task-spec)))
     (let ((task (if (atom atom-or-list)
                     (deftask atom-or-list)
                     (destructuring-bind (id &rest args
@@ -438,6 +439,9 @@
                         atom-or-list
                       (let ((task (apply #'deftask id
                                          :parent (car task-tree)
+                                         :type (if children
+                                                   :group
+                                                   :task)
                                          (remove-keyword-arg args '(:resources :depends-on)))))
                         (when depends-on
                           (loop for dependency in depends-on
