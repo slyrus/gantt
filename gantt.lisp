@@ -248,34 +248,42 @@
 (defun defgroup (name)
   (make-instance 'task :name name))
 
+(defun maybe-parse-time (time-maybe-string)
+  (if (stringp time-maybe-string)
+      (local-time:universal-to-timestamp
+       (cl-date-time-parser:parse-date-time time-maybe-string))
+      time-maybe-string))
+
 (defun deftask (id &key name start end duration progress cost parent notes critical type)
   (cond ((and end duration)
          (error "can only specify end or duration"))
         ((and end (null start))
          (error "end specified without start")))
-  (apply #'make-instance 'task :id id
-         (append (when name
-                   `(:name ,name))
-                 (when start
-                   `(:start ,start))
-                 (when end
-                   `(:duration ,(time-interval:t- end start)))
-                 (when duration
-                   `(:duration ,(if (stringp duration)
-                                    (time-interval:parse-time-interval-string duration)
-                                    duration)))
-                 (when cost
-                   `(:cost ,cost))
-                 (when progress
-                   `(:progress ,progress))
-                 (when parent
-                   `(:parent ,parent))
-                 (when notes
-                   `(:notes ,notes))
-                 (when critical
-                   `(:critical ,critical))
-                 (when type
-                   `(:type ,type)))))
+  (let ((start (maybe-parse-time start))
+        (end (maybe-parse-time end)))
+    (apply #'make-instance 'task :id id
+           (append (when name
+                     `(:name ,name))
+                   (when start
+                     `(:start ,start))
+                   (when end
+                     `(:duration ,(time-interval:t- end start)))
+                   (when duration
+                     `(:duration ,(if (stringp duration)
+                                      (time-interval:parse-time-interval-string duration)
+                                      duration)))
+                   (when cost
+                     `(:cost ,cost))
+                   (when progress
+                     `(:progress ,progress))
+                   (when parent
+                     `(:parent ,parent))
+                   (when notes
+                     `(:notes ,notes))
+                   (when critical
+                     `(:critical ,critical))
+                   (when type
+                     `(:type ,type))))))
 
 ;; find-task looks DOWN in task tree
 (defun find-task (item task &key (test #'equal) (key #'id))
